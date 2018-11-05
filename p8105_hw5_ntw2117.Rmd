@@ -73,13 +73,19 @@ unsolved <- murder %>%
   group_by(city_state) %>% 
   filter(disposition %in% c("Closed without arrest", 
                             "Open/No arrest")) %>% 
-  summarize(total_unsolved = n()) 
+  summarize(unsolved = n()) 
+
+total_cases <- murder %>% 
+  group_by(city_state) %>%
+  summarize(total = n())
+
+all_cases <- left_join(unsolved, total_cases, by = "city_state")
 ```
 
 ```{r fig.align = "center", fig.height = 8, out.width = "80%", dpi = 300}
 unsolved %>% 
-  mutate(city_state = fct_reorder(city_state, total_unsolved)) %>% 
-  ggplot(aes(x = city_state, y = total_unsolved)) + 
+  mutate(city_state = fct_reorder(city_state, unsolved)) %>% 
+  ggplot(aes(x = city_state, y = unsolved)) + 
   geom_bar(stat = "identity", fill = "#A35E60") + 
   coord_flip() + 
   labs(title = "Number of unsolved homicides in 50 major US cities", 
@@ -89,6 +95,23 @@ unsolved %>%
   theme(plot.title = element_text(size = 12))
 ```
 
+```{r}
+city_nest <- nest(all_cases, unsolved:total)
+
+prop_unsolved <- function(df) {
+
+  ci_unsolved <- prop.test(df$unsolved, df$total)
+  
+  broom::tidy(ci_unsolved) %>% 
+    select(estimate, conf.low, conf.high)
+}
+
+city_nest %>% 
+  mutate(prop_unsolved = map(city_nest$data, prop_unsolved)) %>% 
+  unnest()
+
+prop_unsolved(city_nest$data[[1]])
+```
 
 
 
