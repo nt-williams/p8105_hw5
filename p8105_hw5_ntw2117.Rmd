@@ -35,13 +35,23 @@ df <- bind_rows(df) %>%
   select(-delete)
 ```
 
-```{r}
+```{r spaghetti plot, fig.align = "center", out.width = "75%", dpi = 300}
 df %>% 
   mutate(week = as.double(week), 
          study_id = as.character(study_id)) %>% 
   group_by(arm, study_id) %>% 
   ggplot(aes(x = week, y = obs, color = arm, type = study_id)) + 
-    geom_line()
+    geom_line() + 
+  theme_bw() + 
+  labs(title = "Trend in observations across weeks for each\n participant stratified by study arm",
+       x = "Week", 
+       y = "Observation") + 
+  viridis::scale_color_viridis(name = "Study arm",
+                               discrete = TRUE) + 
+  theme(legend.position = "bottom", 
+        legend.direction = "horizontal", 
+        legend.box.spacing = unit(0.05, "cm"),
+        plot.title = element_text(size = 13))
 ```
 
 
