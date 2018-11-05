@@ -21,11 +21,11 @@ df <- file_names %>%
 for (i in 1:20) {
   if (i < 11) {
     df[[i]] <- df[[i]] %>% 
-    mutate(arm = "control", 
+    mutate(arm = "Control", 
            study_id = i)
   } else if (i > 10) {
     df[[i]] <- df[[i]] %>% 
-      mutate(arm = "experimental", 
+      mutate(arm = "Experimental", 
              study_id = i - 10)
   }
 }
@@ -53,9 +53,54 @@ df %>%
   theme(legend.position = "bottom", 
         legend.direction = "horizontal", 
         legend.box.spacing = unit(0.05, "cm"),
-        plot.title = element_text(size = 13))
+        plot.title = element_text(size = 11))
 ```
 
 
 ### Problem 2
+
+```{r importing data, message = FALSE}
+murder <- 
+  read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv") %>% 
+  janitor::clean_names()
+```
+
+```{r}
+murder <- murder %>% 
+  unite("city_state", c("city", "state"), sep = ", ")
+
+unsolved <- murder %>% 
+  group_by(city_state) %>% 
+  filter(disposition %in% c("Closed without arrest", 
+                            "Open/No arrest")) %>% 
+  summarize(total_unsolved = n()) 
+```
+
+```{r fig.align = "center", fig.height = 8, out.width = "80%", dpi = 300}
+unsolved %>% 
+  mutate(city_state = fct_reorder(city_state, total_unsolved)) %>% 
+  ggplot(aes(x = city_state, y = total_unsolved)) + 
+  geom_bar(stat = "identity", fill = "#A35E60") + 
+  coord_flip() + 
+  labs(title = "Number of unsolved homicides in 50 major US cities", 
+       y = "Number of unsolved homicides", 
+       x = "City") + 
+  theme_bw() + 
+  theme(plot.title = element_text(size = 12))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
