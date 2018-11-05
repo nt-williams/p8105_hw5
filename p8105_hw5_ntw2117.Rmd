@@ -5,6 +5,27 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
 ```
 
+
+```{r message = FALSE}
+file_names <- list.files("./data/", full.names = TRUE)
+
+df <- file_names %>% 
+  map(read_csv)
+
+for (i in 1:20) {
+  if (i < 11) {
+    df[[i]] <- df[[i]] %>% 
+    mutate(arm = "con", 
+           study_id = i)
+  } else if (i > 10) {
+    df[[i]] <- df[[i]] %>% 
+      mutate(arm = "exp", 
+             study_id = i)
+  }
+}
+```
 
