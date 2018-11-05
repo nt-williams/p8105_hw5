@@ -10,7 +10,7 @@ library(tidyverse)
 ```
 
 
-```{r message = FALSE}
+```{r importing and tidying data, message = FALSE}
 file_names <- list.files("./data/", full.names = TRUE)
 
 df <- file_names %>% 
@@ -19,13 +19,19 @@ df <- file_names %>%
 for (i in 1:20) {
   if (i < 11) {
     df[[i]] <- df[[i]] %>% 
-    mutate(arm = "con", 
+    mutate(arm = "control", 
            study_id = i)
   } else if (i > 10) {
     df[[i]] <- df[[i]] %>% 
-      mutate(arm = "exp", 
-             study_id = i)
+      mutate(arm = "experimental", 
+             study_id = i - 10)
   }
 }
+
+df <- bind_rows(df) %>% 
+  gather(key = week, value = obs, week_1:week_8) %>% 
+  arrange(week, study_id) %>% 
+  separate(col = week, into = c("delete", "week")) %>% 
+  select(-delete)
 ```
 
