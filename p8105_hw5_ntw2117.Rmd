@@ -22,8 +22,8 @@ df <- file_names %>%
 for (i in 1:20) {
   if (i < 11) {
     df[[i]] <- df[[i]] %>% 
-    mutate(arm = "Control", 
-           study_id = i)
+      mutate(arm = "Control", 
+             study_id = i)
   } else if (i > 10) {
     df[[i]] <- df[[i]] %>% 
       mutate(arm = "Experimental", 
@@ -40,7 +40,7 @@ df <- bind_rows(df) %>%
 
 To import and clean the 20 separate files provided, I first used `list.files` with the `full.names` option set to ` TRUE` so I had a list containing the file names and relative paths for each file. I then used `map` to iterate over the file names and saved the resulting list as an object named `df`. I purposely used `map` instead of `map_df` because I wanted to keep all of the observations as separated items in a list while I added the study arm variable as well as the study ID variable. 
 
-In order to create the two new variables I had two options: I could write a function and then use `map` to iterate over that function or I could forgoe the function and just use a for loop. I chose the latter as, *in this case*, the for-loop seemed the most straight forward path. Because `list.files` stores the file names in alphabetical and then numerical order I used conditional logic with the list indexes so that the first 10 items in the list were assigned the "control" level for the study arm  variable and that the last 10 items in the list were assigned the "experimental" level. For some odd reason, study ID is not a unique identifier in this data and repeats across study arm. Thus, for the last 10 items in the list I subtracted 10 from the index and assigned that number as the study ID for that participant. 
+In order to create the two new variables I had two options: I could write a function and then use `map` to iterate over that function or I could forgoe the function and just use a for-loop. I chose the latter as, *in this case*, the for-loop seemed the most straight forward path. Because `list.files` stores the file names in alphabetical and then numerical order I used conditional logic with the list indexes so that the first 10 items in the list were assigned the "control" level for the study arm  variable and that the last 10 items in the list were assigned the "experimental" level. For some odd reason, study ID is not a unique identifier in this data and repeats across study arm. Thus, for the last 10 items in the list I subtracted 10 from the index and assigned that number as the study ID for that participant. 
 
 After the for-loop, I stacked all the items in the list and then tidied the resulting data frame by transforming it from wide to long form.
 
@@ -54,7 +54,7 @@ df %>%
   ggplot(aes(x = week, y = obs, color = arm, type = study_id)) + 
     geom_line() + 
   theme_bw() + 
-  labs(title = "Trend in observations across weeks for each\n participant stratified by study arm",
+  labs(title = "Trends in observations across study period for each\n participant stratified by study arm",
        x = "Week", 
        y = "Observation") + 
   viridis::scale_color_viridis(name = "Study arm",
@@ -65,7 +65,7 @@ df %>%
         plot.title = element_text(size = 11))
 ```
 
-The spaghetti plot shows that individuals assigned to the experimental appeared to have increasing observation values across the study period while individuals assigned to the control arm appeared to remain constant. We could fit a mixed-effects model with a random intercept to test this. 
+The spaghetti plot shows that individuals assigned to the experimental arm appear to have increasing observation values across the study period while individuals assigned to the control arm appear to remain constant. We could fit a mixed-effects model with a random intercept to test this. 
 
 
 ### Problem 2
@@ -95,6 +95,8 @@ total_cases <- murder %>%
 all_cases <- left_join(unsolved, total_cases, by = "city_state")
 ```
 
+The create a summary data set that contained the number of total cases and the number of unsolved cases in each city I first split the dataset into two separate datasets: `unsolved` which contains the number of unsolved cases in each city and `total` which contains the total number of cases in each city. I then joined the two datasets on the "city_state" variable and saved the resulting data set as `all_cases`
+
 ```{r echo = FALSE, fig.align = "center", fig.height = 8, out.width = "80%", dpi = 300}
 # unsolved %>% 
 #   mutate(city_state = fct_reorder(city_state, unsolved)) %>% 
@@ -118,6 +120,8 @@ prop_unsolved <- function(df) {
 }
 ```
 
+To obtain the estimated proportion of unsolved cases and corresponding confidence interval for a city I wrote a function called `prop_unsolved `that takes one input, the name of the data set. The function then runs `prop.test` using the "unsolved" and "total" columns in the corresponding data. This result is saved to an object called `ci_unsolved` which is then cleaned up using `tidy` from the broom packaged. 
+
 ```{r prop_unsolved for baltimore}
 all_cases %>% 
   filter(city_state == "Baltimore, MD") %>% 
@@ -130,6 +134,8 @@ all_cases %>%
          "Upper bound" = conf.high) %>% 
   knitr::kable()
 ```
+
+The above table shows the estimated proportion and confidence interval of unsolved homicide cases in Baltimore. I estimate that 64.6% of homicide cases in Baltimore are unsolved (95% CI: 62.8%, 66.3%).
 
 ```{r prop_unsolved iteration over all cities, fig.align = "center", out.width = "75%", fig.height = 7, dpi = 300}
 city_nest <- nest(all_cases, unsolved:total)
