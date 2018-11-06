@@ -11,6 +11,8 @@ library(tidyverse)
 
 ### Problem 1
 
+*Importing and tidying data*
+
 ```{r importing and tidying data, message = FALSE}
 file_names <- list.files("./data/", full.names = TRUE)
 
@@ -36,6 +38,14 @@ df <- bind_rows(df) %>%
   select(-delete)
 ```
 
+To import and clean the 20 separate files provided, I first used `list.files` with the `full.names` option set to ` TRUE` so I had a list containing the file names and relative paths for each file. I then used `map` to iterate over the file names and saved the resulting list as an object named `df`. I purposely used `map` instead of `map_df` because I wanted to keep all of the observations as separated items in a list while I added the study arm variable as well as the study ID variable. 
+
+In order to create the two new variables I had two options: I could write a function and then use `map` to iterate over that function or I could forgoe the function and just use a for loop. I chose the latter as, *in this case*, the for-loop seemed the most straight forward path. Because `list.files` stores the file names in alphabetical and then numerical order I used conditional logic with the list indexes so that the first 10 items in the list were assigned the "control" level for the study arm  variable and that the last 10 items in the list were assigned the "experimental" level. For some odd reason, study ID is not a unique identifier in this data and repeats across study arm. Thus, for the last 10 items in the list I subtracted 10 from the index and assigned that number as the study ID for that participant. 
+
+After the for-loop, I stacked all the items in the list and then tidied the resulting data frame by transforming it from wide to long form.
+
+*Creating spaghetti plot*
+
 ```{r spaghetti plot, fig.align = "center", out.width = "75%", dpi = 300}
 df %>% 
   mutate(week = as.double(week), 
@@ -54,6 +64,8 @@ df %>%
         legend.box.spacing = unit(0.05, "cm"),
         plot.title = element_text(size = 11))
 ```
+
+The spaghetti plot shows that individuals assigned to the experimental appeared to have increasing observation values across the study period while individuals assigned to the control arm appeared to remain constant. We could fit a mixed-effects model with a random intercept to test this. 
 
 
 ### Problem 2
