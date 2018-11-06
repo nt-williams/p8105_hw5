@@ -94,7 +94,7 @@ unsolved %>%
   theme(plot.title = element_text(size = 12))
 ```
 
-```{r proportion confidence interval iterations}
+```{r proportion confidence interval iterations, fig.align = "center", out.width = "75%", fig.height = 8, dpi = 300}
 prop_unsolved <- function(df) {
 
   ci_unsolved <- prop.test(df$unsolved, df$total)
@@ -113,6 +113,17 @@ unsolved_ci <- city_nest %>%
   unnest() %>% 
   rename(conf_low = conf.low, 
          conf_high = conf.high)
+
+unsolved_ci %>% 
+  mutate(city_state = fct_reorder(city_state, estimate)) %>% 
+  ggplot(aes(x = city_state, y = estimate)) + 
+  geom_point(color = "#A35E60") + 
+  geom_errorbar(aes(ymin = conf_low, ymax = conf_high)) + 
+  coord_flip() + 
+  labs(title = "Proportion of unsolved cases in 50 major US cities", 
+       y = "Proportion of unsolved cases", 
+       x = "City") + 
+  theme_classic() 
 ```
 
 
