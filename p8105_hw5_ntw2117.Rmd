@@ -7,7 +7,6 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
-library(httr)
 ```
 
 ### Problem 1
@@ -65,7 +64,7 @@ murder <-
   janitor::clean_names()
 ```
 
-```{r}
+```{r creating dataset with unsolved and total}
 murder <- murder %>% 
   unite("city_state", c("city", "state"), sep = ", ")
 
@@ -95,9 +94,7 @@ unsolved %>%
   theme(plot.title = element_text(size = 12))
 ```
 
-```{r}
-city_nest <- nest(all_cases, unsolved:total)
-
+```{r proportion confidence interval iterations}
 prop_unsolved <- function(df) {
 
   ci_unsolved <- prop.test(df$unsolved, df$total)
@@ -106,11 +103,16 @@ prop_unsolved <- function(df) {
     select(estimate, conf.low, conf.high)
 }
 
-city_nest %>% 
-  mutate(prop_unsolved = map(city_nest$data, prop_unsolved)) %>% 
-  unnest()
+city_nest <- nest(all_cases, unsolved:total)
 
-prop_unsolved(city_nest$data[[1]])
+# prop_unsolved(city_nest$data[[1]])
+# map(city_nest$data, prop_unsolved)
+
+unsolved_ci <- city_nest %>% 
+  mutate(prop_unsolved = map(data, prop_unsolved)) %>% 
+  unnest() %>% 
+  rename(conf_low = conf.low, 
+         conf_high = conf.high)
 ```
 
 
