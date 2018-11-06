@@ -94,7 +94,7 @@ unsolved %>%
   theme(plot.title = element_text(size = 12))
 ```
 
-```{r proportion confidence interval iterations, fig.align = "center", out.width = "75%", fig.height = 8, dpi = 300}
+```{r proportion confidence interval iterations, fig.align = "center", out.width = "75%", fig.height = 7, dpi = 300}
 prop_unsolved <- function(df) {
 
   ci_unsolved <- prop.test(df$unsolved, df$total)
