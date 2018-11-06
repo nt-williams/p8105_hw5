@@ -64,6 +64,8 @@ murder <-
   janitor::clean_names()
 ```
 
+The Washington Post homicide dataset contains information on `r nrow(murder)` homicides across 50 major U.S. cities from 2007 to 2015. There are `r ncol(murder)` variables. Variables provide information on the reported date of the homicide, the victims name, age, and whether or not the case was solved. 
+
 ```{r creating dataset with unsolved and total}
 murder <- murder %>% 
   unite("city_state", c("city", "state"), sep = ", ")
@@ -81,20 +83,20 @@ total_cases <- murder %>%
 all_cases <- left_join(unsolved, total_cases, by = "city_state")
 ```
 
-```{r fig.align = "center", fig.height = 8, out.width = "80%", dpi = 300}
-unsolved %>% 
-  mutate(city_state = fct_reorder(city_state, unsolved)) %>% 
-  ggplot(aes(x = city_state, y = unsolved)) + 
-  geom_bar(stat = "identity", fill = "#A35E60") + 
-  coord_flip() + 
-  labs(title = "Number of unsolved homicides in 50 major US cities", 
-       y = "Number of unsolved homicides", 
-       x = "City") + 
-  theme_bw() + 
-  theme(plot.title = element_text(size = 12))
+```{r echo = FALSE, fig.align = "center", fig.height = 8, out.width = "80%", dpi = 300}
+# unsolved %>% 
+#   mutate(city_state = fct_reorder(city_state, unsolved)) %>% 
+#   ggplot(aes(x = city_state, y = unsolved)) + 
+#   geom_bar(stat = "identity", fill = "#A35E60") + 
+#   coord_flip() + 
+#   labs(title = "Number of unsolved homicides in 50 major US cities", 
+#        y = "Number of unsolved homicides", 
+#        x = "City") + 
+#   theme_bw() + 
+#   theme(plot.title = element_text(size = 12))
 ```
 
-```{r proportion confidence interval iterations, fig.align = "center", out.width = "75%", fig.height = 7, dpi = 300}
+```{r prop_unsolved function}
 prop_unsolved <- function(df) {
 
   ci_unsolved <- prop.test(df$unsolved, df$total)
@@ -102,7 +104,22 @@ prop_unsolved <- function(df) {
   broom::tidy(ci_unsolved) %>% 
     select(estimate, conf.low, conf.high)
 }
+```
 
+```{r prop_unsolved for baltimore}
+all_cases %>% 
+  filter(city_state == "Baltimore, MD") %>% 
+  prop_unsolved() %>% 
+  mutate(estimate = round(estimate, 3), 
+         conf.low = round(conf.low, 3), 
+         conf.high = round(conf.high, 3)) %>% 
+  rename(Estimate = estimate, 
+         "Lower bound" = conf.low, 
+         "Upper bound" = conf.high) %>% 
+  knitr::kable()
+```
+
+```{r prop_unsolved iteration over all cities, fig.align = "center", out.width = "75%", fig.height = 7, dpi = 300}
 city_nest <- nest(all_cases, unsolved:total)
 
 # prop_unsolved(city_nest$data[[1]])
@@ -122,7 +139,8 @@ unsolved_ci %>%
   coord_flip() + 
   labs(title = "Proportion of unsolved cases in 50 major US cities", 
        y = "Proportion of unsolved cases", 
-       x = "City") + 
+       x = "City", 
+       caption = "Error bars represent 95% confidence interval") + 
   theme_classic() 
 ```
 
