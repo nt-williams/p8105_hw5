@@ -162,6 +162,10 @@ unsolved_ci %>%
   theme_classic() 
 ```
 
+To iterate over all cities using the function I created, I used `nest` to create a data set called `city_nest` that has a column named data that is a list column containing the number of unsolved and total cases in each city. I then used `map` within a `mutate` function to iterate over the data column and created a new list column that contains the estimate and confidence inteval. I then plotted the estimates. 
+
+The resulting plot shows the estimated proportion of unsolved homicide cases in each of the 50 cities with a corresponding confidence interval. Chicago has the highest proportion of unsolved cases, followed by New Orleans and Baltimore. Richmond has the lowest proportion of unsolved cases. 
+
 
 
 
